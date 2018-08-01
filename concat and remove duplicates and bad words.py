@@ -21,4 +21,4 @@ df = df.groupby('lyrics').filter(lambda x: x.lyrics.value_counts().max() < 4)
 df = df.loc[df['isBad'] == 0]
 
 ## write to csv
-df.to_csv('dataset with duplicates and bad words removed.csv')
+df.to_csv('cleaned dataset.csv')
