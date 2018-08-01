@@ -6,6 +6,17 @@
 import pandas as pd
 from pypinyin import pinyin, lazy_pinyin, Style
 
+df_list = []
+for i in range(1, 11):
+    df = pd.read_csv('data/{}.csv'.format(str(i)), header=None)
+    df_list.append(df)
+
+# Read in
+df = pd.concat(df_list)
+df = df.dropna(axis=0, how='any')
+df.to_csv('df_all.csv', index=False, header=False)
+
+
 df_all = pd.read_csv('df_all.csv', names=['lyrics', 'isBad'])
 print(df_all.head())
 
