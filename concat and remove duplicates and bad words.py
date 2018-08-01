@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-# Create csv file list
+# Create csv file list.
 df_list = []
 for i in range(1, 11):
     df = pd.read_csv('data/{}.csv'.format(str(i)), header=None)
@@ -21,4 +21,4 @@ df = df.groupby('lyrics').filter(lambda x: x.lyrics.value_counts().max() < 4)
 df = df.loc[df['isBad'] == 0]
 
 ## write to csv
-df.to_csv('dataset with duplicates and bad words removed.csv')
+df.to_csv('cleaned dataset.csv')
