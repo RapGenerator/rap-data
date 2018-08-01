@@ -6,14 +6,14 @@
 import pandas as pd
 from pypinyin import pinyin, lazy_pinyin, Style
 
-df_all = pd.read_csv('df_all.csv', names=['lyric', 'label'])
+df_all = pd.read_csv('df_all.csv', names=['lyrics', 'isBad'])
 print(df_all.head())
 
 for i in range(len(df_all)):
     if i % 1000 == 0:
         df_all.to_csv('df_all_pinyin.csv', index=False)
         print(i)
-    pinyin_loci = lazy_pinyin(df_all.loc[i, 'lyric'], errors='ignore')
+    pinyin_loci = lazy_pinyin(df_all.loc[i, 'lyrics'], errors='ignore')
     len_pinyin_loci = len(pinyin_loci)
     df_all.loc[i, 'pinyin_neg1'] = pinyin_loci[-1]
     if len_pinyin_loci > 1:
