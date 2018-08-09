@@ -26,9 +26,8 @@ df_all.to_csv('df_all_rhyme_Finals.csv', index=False)
 # 读取处理了韵母的文件
 df_all = pd.read_csv('df_all_rhyme_Finals.csv')
 
-
 # 1 排韵
-
+'''
 def dict_count_paiyun(list_last, ya_n):
     len_list_last = len(list_last)
     res_count = {}  # 存放计数字典
@@ -66,9 +65,41 @@ for i in range(5):
         df_yun_pai = df_all[df_all['isPaiYun'] == 1]['lyric']
         df_yun_pai.to_csv('df_yun_pai.txt', sep='-', index=False)
         print('排韵-单押保存成功...')
+'''
+
 
 # 2 隔行韵
+def dict_count_paiyun(list_last, ya_n):
+    len_list_last = len(list_last)
+    res_count = {}  # 存放计数字典
+    df_all.loc[:, 'isGeiHangYun'] = 0
+    head, tail = 0, 0
+    while head < len_list_last:
+        while tail < len_list_last and list(list_last.iloc[tail]) == list(list_last.iloc[head]):
+            tail += 2
+        if tail - head > 3:
+            dict_key = 'ya_0' + str(tail - head) if (tail - head) < 10 else 'ya_' + str(tail - head)
+            res_count[dict_key] = res_count.get(dict_key, 0) + 1
+            # 标记是否押韵
+            df_all.loc[head:tail - 2, 'isGeiHangYun'] = 1
 
+        head = tail - 1
+        tail = head
+    res_count = sorted(res_count.items(), key=lambda item: item[0])
+    return res_count
+
+
+print('隔行韵...')
+for i in range(5):
+    list_last = df_all.iloc[:, -(i + 1):]
+    res_last = dict_count_paiyun(list_last, i)
+    print('隔行韵-%d押:' % (i + 1))
+    print(res_last, '\n\n')
+    # 保存截取出来押韵,只保存单押情况
+    if i == 0:
+        df_yun_geihang = df_all[df_all['isGeiHangYun'] == 1]['lyric']
+        df_yun_geihang.to_csv('df_yun_geihang.txt', sep='-', index=False)
+        print('隔行韵-单押保存成功...')
 '''
 # 3 交韵
 def dict_count_jiaoyun(list_last):
