@@ -12,7 +12,7 @@ from collections import Counter
 # 是否Strict
 IS_STRICT = True
 # for循环几押
-FOR_NUM = 1
+FOR_NUM = 5
 
 '''
 # 读取数据
@@ -103,39 +103,46 @@ def is_rhymes_list(list_a, list_b, strict_or_not=IS_STRICT):
     return True
 
 
+neg_num = ['Finals_neg5', 'Finals_neg4', 'Finals_neg3', 'Finals_neg2', 'Finals_neg1']
+
+
 # 1 排韵
-def dict_count_paiyun(list_last):
+def dict_count_paiyun(list_last, lastn):
     len_list_last = len(list_last)
     res_count = {}  # 存放计数字典
+    res_count_yun = {}
     df_all.loc[:, 'isPaiYun'] = 0
     head, tail = 0, 0
     while head < len_list_last:
-        # print(list(list_last.iloc[tail]), list(list_last.iloc[head]))
         while tail < len_list_last and is_rhymes_list(list(list_last.iloc[tail]), list(list_last.iloc[head])) \
                 and df_all.loc[head, 'lyric'] != df_all.loc[tail, 'lyric']:
-            if len(df_all.loc[tail]) > 30:
-                print(df_all.loc[head, 'lyric'], df_all.loc[tail, 'lyric'])
-                pass
             tail += 1
         if tail - head > 1:
             dict_key = 'ya_0' + str(tail - head) if (tail - head) < 10 else 'ya_' + str(tail - head)
             res_count[dict_key] = res_count.get(dict_key, 0) + 1
             # 标记是否押韵
             df_all.loc[head:tail - 1, 'isPaiYun'] = 1
+            # 统计韵母次数
+            dict_key_yun = str([yun_strict.get(list_last.loc[head].get(k)) for k in neg_num[-lastn:]])
+            res_count_yun[dict_key_yun] = res_count_yun.get(dict_key_yun, 0) + (tail - head)
 
         head = tail
         tail += 1
     res_count = sorted(res_count.items(), key=lambda item: item[0])
-    return res_count
+    res_count_yun = sorted(res_count_yun.items(), key=lambda item: item[1])
+
+    return res_count, res_count_yun
 
 
 def get_yun_pai():
     print('排韵...')
     for i in range(FOR_NUM):
-        list_last = df_all.iloc[:, -(i + 1):]
-        res_last = dict_count_paiyun(list_last)
+        list_last = df_all.loc[:, neg_num[-(i + 1):]]
+        res_last, res_count_yun = dict_count_paiyun(list_last, i + 1)
         print('排韵-%d押:' % (i + 1))
         print(res_last)
+        print('韵母次数:')
+        print(res_count_yun)
         # 保存截取出来押韵,只保存单押情况
         if i == 0:
             df_yun_pai = df_all[df_all['isPaiYun'] == 1]['lyric']
@@ -144,12 +151,15 @@ def get_yun_pai():
             else:
                 df_yun_pai.to_csv('df_yun_pai_no_strict.txt', index=False)
             print('排韵-单押保存成功...\n\n')
+        # 删除上一轮循环产生
+        # del df_all['isPaiYun']
 
 
 # 2 隔行韵
-def dict_count_gehangyun(list_last):
+def dict_count_gehangyun(list_last, lastn):
     len_list_last = len(list_last)
     res_count = {}  # 存放计数字典
+    res_count_yun = {}
     df_all.loc[:, 'isGeHangYun'] = 0
     head, tail = 0, 0
     while head < len_list_last:
@@ -163,20 +173,26 @@ def dict_count_gehangyun(list_last):
             res_count[dict_key] = res_count.get(dict_key, 0) + 1
             # 标记是否押韵
             df_all.loc[head:tail - 2, 'isGeHangYun'] = 1
+            # 统计韵母次数
+            dict_key_yun = str([yun_strict.get(list_last.loc[head].get(k)) for k in neg_num[-lastn:]])
+            res_count_yun[dict_key_yun] = res_count_yun.get(dict_key_yun, 0) + int((tail - head) / 2)
 
         head = tail - 1
         tail = head
     res_count = sorted(res_count.items(), key=lambda item: item[0])
-    return res_count
+    res_count_yun = sorted(res_count_yun.items(), key=lambda item: item[1])
+    return res_count, res_count_yun
 
 
 def get_yun_gehang():
     print('隔行韵...')
     for i in range(FOR_NUM):
-        list_last = df_all.iloc[:, -(i + 1):]
-        res_last = dict_count_gehangyun(list_last)
+        list_last = df_all.loc[:, neg_num[-(i + 1):]]
+        res_last, res_count_yun = dict_count_gehangyun(list_last, i + 1)
         print('隔行韵-%d押:' % (i + 1))
         print(res_last)
+        print('韵母次数:')
+        print(res_count_yun)
         # 保存截取出来押韵,只保存单押情况
         if i == 0:
             df_yun_gehang = df_all[df_all['isGeHangYun'] == 1]['lyric']
@@ -188,9 +204,10 @@ def get_yun_gehang():
 
 
 # 3 交韵
-def dict_count_jiaoyun(list_last):
+def dict_count_jiaoyun(list_last, lastn):
     len_list_last = len(list_last)
     res_count = {}  # 存放计数字典
+    res_count_yun = {}
     df_all.loc[:, 'isJiaoYun'] = 0
     head, tail = 0, 0
     while head < len_list_last:
@@ -205,20 +222,25 @@ def dict_count_jiaoyun(list_last):
             res_count[dict_key] = res_count.get(dict_key, 0) + 1
             # 标记是否押韵
             df_all.loc[head:tail - 1, 'isJiaoYun'] = 1
-            # print(df_all.loc[head:tail-1])
+            # 统计韵母次数
+            dict_key_yun = str([yun_strict.get(list_last.loc[head].get(k)) for k in neg_num[-lastn:]])
+            res_count_yun[dict_key_yun] = res_count_yun.get(dict_key_yun, 0) + (tail - head)
         head = tail - 1
         tail += 1
     res_count = sorted(res_count.items(), key=lambda item: item[0])
-    return res_count
+    res_count_yun = sorted(res_count_yun.items(), key=lambda item: item[1])
+    return res_count, res_count_yun
 
 
 def get_yun_jiao():
     print('交韵...')
     for i in range(FOR_NUM):
-        list_last = df_all.iloc[:, -(i + 1):]
-        res_last = dict_count_jiaoyun(list_last)
+        list_last = df_all.loc[:, neg_num[-(i + 1):]]
+        res_last, res_count_yun = dict_count_jiaoyun(list_last, i + 1)
         print('交韵-%d押:' % (i + 1))
         print(res_last)
+        print('韵母次数:')
+        print(res_count_yun)
         if i == 0:
             df_yun_jiao = df_all[df_all['isJiaoYun'] == 1]['lyric']
             if IS_STRICT:
@@ -229,9 +251,10 @@ def get_yun_jiao():
 
 
 # 4 抱韵
-def dict_count_baoyun(list_last):
+def dict_count_baoyun(list_last, lastn):
     len_list_last = len(list_last)
     res_count = {}  # 存放计数字典
+    res_count_yun = {}
     df_all.loc[:, 'isBaoYun'] = 0
     head = 0
     dict_key = 'ya_count'
@@ -244,16 +267,19 @@ def dict_count_baoyun(list_last):
             res_count['ya_count'] = res_count.get(dict_key, 0) + 1
         head += 1
     res_count = sorted(res_count.items(), key=lambda item: item[0])
-    return res_count
+    res_count_yun = sorted(res_count_yun.items(), key=lambda item: item[1])
+    return res_count, res_count_yun
 
 
 def get_yun_bao():
     print('抱韵...')
     for i in range(FOR_NUM):
-        list_last = df_all.iloc[:, -(i + 1):]
-        res_last = dict_count_baoyun(list_last)
+        list_last = df_all.loc[:, neg_num[-(i + 1):]]
+        res_last, res_count_yun = dict_count_baoyun(list_last, i + 1)
         print('抱韵-%d押:' % (i + 1))
         print(res_last)
+        print('韵母次数:')
+        print(res_count_yun)
         if i == 0:
             df_yun_bao = df_all[df_all['isBaoYun'] == 1]['lyric']
             if IS_STRICT:
@@ -265,6 +291,6 @@ def get_yun_bao():
 
 if __name__ == '__main__':
     # get_yun_pai()
-    # get_yun_gehang()
+    get_yun_gehang()
     # get_yun_jiao()
-    get_yun_bao()
+    # get_yun_bao()
