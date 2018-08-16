@@ -26,8 +26,23 @@ data_topic = pd.read_csv('data_topic.csv', names=['lyric', 'topic'])
 # 删除0.0
 data_topic = data_topic[data_topic['topic'] != 0.0]
 data_topic['topic'] = data_topic['topic'].map(dict_topic)
+# 替换空格
+# data_topic['lyric'] = data_topic['lyric'].apply(lambda x: x.replace(' ', '_'))
 
-print(data_topic.groupby('topic').count())
+# print(data_topic.groupby('topic').count())
+
+# 主题放歌词前面,不分词
+data_topic['topic_lyric'] = data_topic['topic'] + data_topic['lyric']
+data_topic['topic_lyric'].to_csv('df_topic_add_lyric.txt', index=False, header=False)
+
+# 主题放分词后的歌词前面
+data_topic['lyric'] = data_topic['lyric'].apply(lambda x: "/".join(jieba.cut(x)))
+data_topic['topic_lyric'] = data_topic['topic'] + '/' + data_topic['lyric']
+data_topic['topic_lyric'].to_csv('df_topic_add_lyric_cut.txt', index=False, header=False)
+
+print(data_topic.head())
+
+# 各类歌词句数统计
 '''
 diss    5739
 中国风     1771
@@ -59,12 +74,3 @@ diss    5739
 金钱       939
 青春       828
 '''
-
-data_topic['topic_lyric'] = data_topic['topic'] + data_topic['lyric']
-data_topic['topic_lyric'].to_csv('df_topic_add_lyric.txt', index=False, header=False)
-
-data_topic['lyric'] = data_topic['lyric'].apply(lambda x: " ".join(jieba.cut(x)))
-data_topic['topic_lyric'] = data_topic['topic'] + ' ' + data_topic['lyric']
-data_topic['topic_lyric'].to_csv('df_topic_add_lyric_cut.txt', index=False, header=False)
-
-print(data_topic.head())

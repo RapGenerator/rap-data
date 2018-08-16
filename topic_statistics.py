@@ -17,6 +17,6 @@ for topic in list_topic:
     len_topic_class = len(topic_class)
 
     topic_class_sources = topic_class[:len_topic_class - 1]
-    topic_class_targets = topic_class[1:len_topic_class]
+    topic_class_targets = topic_class[1:]
     topic_class_sources['lyric'].to_csv('data_topic/' + str(topic) + '_sources.txt', index=False, header=False)
     topic_class_targets['lyric'].to_csv('data_topic/' + str(topic) + '_targets.txt', index=False, header=False)
